@@ -1,0 +1,163 @@
+{
+  "entities": {
+    "WatchlistItem": {
+      "title": "WatchlistItem",
+      "description": "A stock saved in a user's personal cloud-synced watchlist with statistical probability metrics and custom sort order.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user owning this watchlist entry."
+        },
+        "ticker": {
+          "type": "string",
+          "description": "Stock ticker symbol (e.g., NVDA, BBCA.JK)."
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Full company name."
+        },
+        "exchange": {
+          "type": "string",
+          "description": "Stock exchange code (e.g., NASDAQ, IDX, LSE, TSE)."
+        },
+        "country": {
+          "type": "string",
+          "description": "Country of listing."
+        },
+        "sector": {
+          "type": "string",
+          "description": "Industry sector."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Trading currency code (e.g., USD, IDR, JPY)."
+        },
+        "lastPrice": {
+          "type": "number",
+          "description": "Latest recorded stock price."
+        },
+        "changePercent": {
+          "type": "number",
+          "description": "Daily percentage change."
+        },
+        "chanceUp": {
+          "type": "integer",
+          "description": "Calibrated probability of price increase (0-100)."
+        },
+        "chanceDown": {
+          "type": "integer",
+          "description": "Calibrated probability of price decrease (0-100)."
+        },
+        "chanceSideways": {
+          "type": "integer",
+          "description": "Calibrated probability of sideways movement (0-100)."
+        },
+        "sortOrder": {
+          "type": "integer",
+          "description": "Custom display order in user's watchlist."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "ticker",
+        "companyName",
+        "exchange",
+        "country",
+        "sector",
+        "currency",
+        "lastPrice",
+        "changePercent",
+        "chanceUp",
+        "chanceDown",
+        "chanceSideways",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StockAlert": {
+      "title": "StockAlert",
+      "description": "User-configured alert rule for stock price movements, prediction shifts, or news events.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the authenticated user owning this alert."
+        },
+        "ticker": {
+          "type": "string",
+          "description": "Target stock ticker symbol."
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Target company name."
+        },
+        "alertType": {
+          "type": "string",
+          "enum": [
+            "PRICE_SURGE",
+            "PRICE_DROP",
+            "PREDICTION_SHIFT",
+            "EARNINGS_NEWS",
+            "SENTIMENT_SHIFT",
+            "SUPPORT_RESISTANCE"
+          ],
+          "description": "Type of stock trigger."
+        },
+        "thresholdValue": {
+          "type": "number",
+          "description": "Threshold percentage or price level."
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the alert is currently active."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "ticker",
+        "companyName",
+        "alertType",
+        "thresholdValue",
+        "enabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/watchlist/{itemId}": {
+      "schema": {
+        "$ref": "#/entities/WatchlistItem"
+      },
+      "description": "Stores per-user synced watchlist items."
+    },
+    "/users/{userId}/alerts/{alertId}": {
+      "schema": {
+        "$ref": "#/entities/StockAlert"
+      },
+      "description": "Stores per-user stock notification alert configurations."
+    }
+  }
+}

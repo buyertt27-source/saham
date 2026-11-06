@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1: Global Default-Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_.\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidWatchlistItem(data, userId) {
+      return data.keys().hasAll([
+               'userId', 'ticker', 'companyName', 'exchange', 'country',
+               'sector', 'currency', 'lastPrice', 'changePercent',
+               'chanceUp', 'chanceDown', 'chanceSideways', 'sortOrder',
+               'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'userId', 'ticker', 'companyName', 'exchange', 'country',
+               'sector', 'currency', 'lastPrice', 'changePercent',
+               'chanceUp', 'chanceDown', 'chanceSideways', 'sortOrder',
+               'createdAt', 'updatedAt'
+             ]) &&
+             data.userId is string && data.userId == request.auth.uid && data.userId == userId &&
+             data.ticker is string && data.ticker.size() >= 1 && data.ticker.size() <= 30 &&
+             data.companyName is string && data.companyName.size() >= 1 && data.companyName.size() <= 150 &&
+             data.exchange is string && data.exchange.size() >= 1 && data.exchange.size() <= 40 &&
+             data.country is string && data.country.size() >= 1 && data.country.size() <= 60 &&
+             data.sector is string && data.sector.size() >= 1 && data.sector.size() <= 80 &&
+             data.currency is string && data.currency.size() >= 1 && data.currency.size() <= 10 &&
+             (data.lastPrice is int || data.lastPrice is float) &&
+             (data.changePercent is int || data.changePercent is float) &&
+             data.chanceUp is int && data.chanceUp >= 0 && data.chanceUp <= 100 &&
+             data.chanceDown is int && data.chanceDown >= 0 && data.chanceDown <= 100 &&
+             data.chanceSideways is int && data.chanceSideways >= 0 && data.chanceSideways <= 100 &&
+             (data.chanceUp + data.chanceDown + data.chanceSideways == 100) &&
+             data.sortOrder is int && data.sortOrder >= 0 && data.sortOrder <= 10000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidStockAlert(data, userId) {
+      return data.keys().hasAll([
+               'userId', 'ticker', 'companyName', 'alertType',
+               'thresholdValue', 'enabled', 'createdAt', 'updatedAt'
+             ]) &&
+             data.keys().hasOnly([
+               'userId', 'ticker', 'companyName', 'alertType',
+               'thresholdValue', 'enabled', 'createdAt', 'updatedAt'
+             ]) &&
+             data.userId is string && data.userId == request.auth.uid && data.userId == userId &&
+             data.ticker is string && data.ticker.size() >= 1 && data.ticker.size() <= 30 &&
+             data.companyName is string && data.companyName.size() >= 1 && data.companyName.size() <= 150 &&
+             data.alertType is string &&
+             data.alertType in [
+               'PRICE_SURGE', 'PRICE_DROP', 'PREDICTION_SHIFT',
+               'EARNINGS_NEWS', 'SENTIMENT_SHIFT', 'SUPPORT_RESISTANCE'
+             ] &&
+             (data.thresholdValue is int || data.thresholdValue is float) &&
+             data.enabled is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/watchlist/{itemId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(itemId);
+      allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(itemId) &&
+                       isValidWatchlistItem(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(itemId) &&
+                       isValidWatchlistItem(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().ticker == existing().ticker &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'companyName', 'exchange', 'country', 'sector', 'currency',
+                         'lastPrice', 'changePercent', 'chanceUp', 'chanceDown',
+                         'chanceSideways', 'sortOrder', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(itemId);
+    }
+
+    match /users/{userId}/alerts/{alertId} {
+      allow get: if isOwner(userId) && isValidId(userId) && isValidId(alertId);
+      allow list: if isOwner(userId) && existing().userId == request.auth.uid;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(alertId) &&
+                       isValidStockAlert(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       isValidId(alertId) &&
+                       isValidStockAlert(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().ticker == existing().ticker &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'companyName', 'alertType', 'thresholdValue', 'enabled', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId) && isValidId(alertId);
+    }
+  }
+}

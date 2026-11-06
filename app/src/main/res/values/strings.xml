@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Global Stock Intelligence</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_markets">Markets</string>
+    <string name="nav_watchlist">Watchlist</string>
+    <string name="nav_news">News</string>
+    <string name="nav_profile">Profile</string>
+    <string name="search_stocks_hint">Search ticker, company, country, exchange, sector...</string>
+    <string name="market_overview">Global Market Overview</string>
+    <string name="market_sentiment">Global Market Sentiment</string>
+    <string name="top_opportunities">Top Stock Opportunities</string>
+    <string name="top_losers">Significant Decliners &amp; Drivers</string>
+    <string name="ai_stock_prediction">Statistical &amp; AI Probability Engine</string>
+    <string name="insufficient_data">Insufficient Data</string>
+    <string name="compare_stocks">Stock Comparison Matrix</string>
+</resources>

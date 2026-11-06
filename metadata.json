@@ -1,0 +1,6 @@
+{
+  "name": "Global Stock Intelligence",
+  "description": "Aplikasi analisis pasar saham global berdesain Dark Premium Liquid Glass dengan prediksi probabilitas berbasis statistik, analisis berita AI, indikator teknikal & fundamental, dan watchlist tersinkronisasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
